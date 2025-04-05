@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>نظام الصرف والاستثمار</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>نظام الصرف والاستثمار</h1>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="openTab('converter')">تحويل العملات</div>
+            <div class="tab" onclick="openTab('exchange-rates')">أسعار الصرف</div>
+            <div class="tab" onclick="openTab('stock-market')">البورصة والأسواق</div>
+        </div>
+        
+        <!-- واجهة تحويل العملات -->
+        <div id="converter" class="tab-content active">
+            <div class="form-group amount-input">
+                <label for="amount">المبلغ:</label>
+                <span class="currency-symbol" id="from-symbol">$</span>
+                <input type="text" id="amount" placeholder="0.00" readonly>
+            </div>
+            
+            <div class="keypad">
+                <button onclick="appendNumber('7')">7</button>
+                <button onclick="appendNumber('8')">8</button>
+                <button onclick="appendNumber('9')">9</button>
+                <button onclick="appendNumber('4')">4</button>
+                <button onclick="appendNumber('5')">5</button>
+                <button onclick="appendNumber('6')">6</button>
+                <button onclick="appendNumber('1')">1</button>
+                <button onclick="appendNumber('2')">2</button>
+                <button onclick="appendNumber('3')">3</button>
+                <button onclick="appendNumber('0')">0</button>
+                <button onclick="appendDecimal()">.</button>
+                <button class="clear" onclick="clearAmount()">مسح</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="from">من عملة:</label>
+                <select id="from" onchange="updateCurrencySymbol()">
+                    <option value="USD">🇺🇸 الدولار الأمريكي (USD)</option>
+                    <option value="EUR">🇪🇺 اليورو (EUR)</option>
+                    <option value="GBP">🇬🇧 الجنيه الإسترليني (GBP)</option>
+                    <option value="JPY">🇯🇵 الين الياباني (JPY)</option>
+                    <option value="SAR">🇸🇦 الريال السعودي (SAR)</option>
+                    <option value="AED">🇦🇪 الدرهم الإماراتي (AED)</option>
+                    <option value="EGP">🇪🇬 الجنيه المصري (EGP)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="to">إلى عملة:</label>
+                <select id="to">
+                    <option value="USD">🇺🇸 الدولار الأمريكي (USD)</option>
+                    <option value="EUR">🇪🇺 اليورو (EUR)</option>
+                    <option value="GBP">🇬🇧 الجنيه الإسترليني (GBP)</option>
+                    <option value="JPY">🇯🇵 الين الياباني (JPY)</option>
+                    <option value="SAR" selected>🇸🇦 الريال السعودي (SAR)</option>
+                    <option value="AED">🇦🇪 الدرهم الإماراتي (AED)</option>
+                    <option value="EGP">🇪🇬 الجنيه المصري (EGP)</option>
+                </select>
+            </div>
+            
+            <button class="convert-btn" onclick="convertCurrency()">تحويل العملة</button>
+            
+            <div class="result" id="result">
+                <div style="color: #777;">سيظهر هنا نتيجة التحويل</div>
+            </div>
+        </div>
+        
+        <!-- واجهة أسعار الصرف -->
+        <div id="exchange-rates" class="tab-content">
+            <h2>أسعار صرف العملات</h2>
+            <div class="form-group">
+                <label for="base-currency">العملة الأساسية:</label>
+                <select id="base-currency" onchange="updateExchangeRatesTable()">
+                    <option value="USD">🇺🇸 الدولار الأمريكي (USD)</option>
+                    <option value="EUR">🇪🇺 اليورو (EUR)</option>
+                    <option value="GBP">🇬🇧 الجنيه الإسترليني (GBP)</option>
+                    <option value="JPY">🇯🇵 الين الياباني (JPY)</option>
+                    <option value="SAR" selected>🇸🇦 الريال السعودي (SAR)</option>
+                    <option value="AED">🇦🇪 الدرهم الإماراتي (AED)</option>
+                    <option value="EGP">🇪🇬 الجنيه المصري (EGP)</option>
+                </select>
+            </div>
+            
+            <table class="exchange-rates-table">
+                <thead>
+                    <tr>
+                        <th>العملة</th>
+                        <th>السعر</th>
+                        <th>التغيير (24 س)</th>
+                    </tr>
+                </thead>
+                <tbody id="rates-table-body"></tbody>
+            </table>
+        </div>
+        
+        <!-- واجهة البورصة والأسواق -->
+        <div id="stock-market" class="tab-content">
+            <h2>أسواق المال والسلع</h2>
+            
+            <h3>المؤشرات العالمية</h3>
+            <div class="stock-market" id="global-indices"></div>
+            
+            <h3>المؤشرات العربية</h3>
+            <div class="stock-market" id="arabic-indices"></div>
+            
+            <h3>السلع الأساسية</h3>
+            <div class="stock-market" id="commodities"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
