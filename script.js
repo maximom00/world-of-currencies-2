@@ -1,163 +1,214 @@
-// script.js
-const exchangeRates = {
-    USD: { USD: 1, EUR: 0.92, GBP: 0.79, JPY: 151.50, SAR: 3.75, AED: 3.67, EGP: 47.50 },
-    EUR: { USD: 1.09, EUR: 1, GBP: 0.86, JPY: 164.50, SAR: 4.08, AED: 4.00, EGP: 51.60 },
-    GBP: { USD: 1.27, EUR: 1.16, GBP: 1, JPY: 191.20, SAR: 4.75, AED: 4.65, EGP: 60.00 },
-    JPY: { USD: 0.0066, EUR: 0.0061, GBP: 0.0052, JPY: 1, SAR: 0.025, AED: 0.024, EGP: 0.31 },
-    SAR: { USD: 0.27, EUR: 0.25, GBP: 0.21, JPY: 40.20, SAR: 1, AED: 0.98, EGP: 12.67 },
-    AED: { USD: 0.27, EUR: 0.25, GBP: 0.21, JPY: 41.20, SAR: 1.02, AED: 1, EGP: 12.95 },
-    EGP: { USD: 0.021, EUR: 0.019, GBP: 0.017, JPY: 3.20, SAR: 0.079, AED: 0.077, EGP: 1 }
-};
-
-const stockData = {
-    global: [
-        { name: "S&P 500", price: 5218.75, change: 0.42, symbol: "SPX" },
-        { name: "NASDAQ", price: 16341.32, change: 0.67, symbol: "IXIC" },
-        { name: "Dow Jones", price: 39312.24, change: 0.28, symbol: "DJI" }
-    ],
-    arabic: [
-        { name: "تداول السعودي", price: 12245.67, change: 1.15, symbol: "TASI" },
-        { name: "DFM", price: 4231.56, change: 0.83, symbol: "DFMGI" },
-        { name: "مصر", price: 25678.90, change: -0.32, symbol: "EGX30" }
-    ],
-    commodities: [
-        { name: "الذهب", price: 2314.50, change: -0.35, symbol: "XAU", unit: "أونصة" },
-        { name: "النفط (برنت)", price: 85.72, change: 1.24, symbol: "BZ", unit: "برميل" }
-    ]
-};
-
-const currencySymbols = {
-    USD: "$", EUR: "€", GBP: "£", JPY: "¥", 
-    SAR: "ر.س", AED: "د.إ", EGP: "ج.م"
-};
-
-const currencyNames = {
-    USD: "الدولار الأمريكي", EUR: "اليورو", GBP: "الجنيه الإسترليني",
-    JPY: "الين الياباني", SAR: "الريال السعودي", AED: "الدرهم الإماراتي",
-    EGP: "الجنيه المصري"
-};
-
-function openTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    document.getElementById(tabId).classList.add('active');
-    event.currentTarget.classList.add('active');
-    
-    if (tabId === 'exchange-rates') updateExchangeRatesTable();
-    if (tabId === 'stock-market') updateStockMarketData();
+/* styles.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-function updateCurrencySymbol() {
-    const fromCurrency = document.getElementById('from').value;
-    document.getElementById('from-symbol').textContent = currencySymbols[fromCurrency];
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2980b9;
+    --background-color: #f5f5f5;
+    --card-color: #ffffff;
+    --text-color: #333333;
+    --tab-active-color: #3498db;
+    --tab-inactive-color: #dddddd;
+    --positive-color: #2ecc71;
+    --negative-color: #e74c3c;
 }
 
-function appendNumber(number) {
-    const amountInput = document.getElementById('amount');
-    amountInput.value = amountInput.value === '0' ? number : amountInput.value + number;
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    overflow-x: hidden;
+    touch-action: manipulation;
 }
 
-function appendDecimal() {
-    const amountInput = document.getElementById('amount');
-    if (!amountInput.value.includes('.')) amountInput.value += '.';
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
 }
 
-function clearAmount() {
-    document.getElementById('amount').value = '0';
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-top: 10px;
 }
 
-function convertCurrency() {
-    const amount = parseFloat(document.getElementById('amount').value);
-    const fromCurrency = document.getElementById('from').value;
-    const toCurrency = document.getElementById('to').value;
-    const resultDiv = document.getElementById('result');
-    
-    if (isNaN(amount)) {
-        resultDiv.innerHTML = '<div style="color: var(--negative-color);">الرجاء إدخال مبلغ صحيح</div>';
-        return;
-    }
-    
-    if (amount <= 0) {
-        resultDiv.innerHTML = '<div style="color: var(--negative-color);">الرجاء إدخال مبلغ أكبر من الصفر</div>';
-        return;
-    }
-    
-    if (fromCurrency === toCurrency) {
-        resultDiv.innerHTML = `
-            <div style="font-size: 18px; margin-bottom: 8px;">${amount.toFixed(2)} ${fromCurrency} = ${amount.toFixed(2)} ${toCurrency}</div>
-            <div style="color: #777; font-size: 14px;">نفس العملة - لا يوجد تحويل</div>
-        `;
-        return;
-    }
-    
-    const rate = exchangeRates[fromCurrency][toCurrency];
-    const convertedAmount = (amount * rate).toFixed(2);
-    
-    resultDiv.innerHTML = `
-        <div style="font-size: 18px; margin-bottom: 8px;">${amount.toFixed(2)} ${fromCurrency} = ${convertedAmount} ${toCurrency}</div>
-        <div style="color: #777; font-size: 14px;">سعر الصرف: 1 ${fromCurrency} = ${rate.toFixed(6)} ${toCurrency}</div>
-    `;
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-function updateExchangeRatesTable() {
-    const baseCurrency = document.getElementById('base-currency').value;
-    const tableBody = document.getElementById('rates-table-body');
-    tableBody.innerHTML = '';
-    
-    const displayCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'SAR', 'AED', 'EGP'];
-    
-    displayCurrencies.forEach(currency => {
-        if (currency !== baseCurrency) {
-            const rate = exchangeRates[baseCurrency][currency];
-            const change24h = (Math.random() * 2 - 1).toFixed(2);
-            const changeClass = change24h >= 0 ? 'up' : 'down';
-            
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${currencyNames[currency]} (${currency})</td>
-                <td>${rate.toFixed(6)}</td>
-                <td class="${changeClass}">${change24h >= 0 ? '+' : ''}${change24h}%</td>
-            `;
-            tableBody.appendChild(row);
-        }
-    });
+.tab {
+    padding: 15px 20px;
+    cursor: pointer;
+    background-color: var(--tab-inactive-color);
+    transition: all 0.3s;
+    font-weight: bold;
+    text-align: center;
+    flex: 1;
+    font-size: 14px;
 }
 
-function updateStockMarketData() {
-    renderStockCards('global-indices', stockData.global);
-    renderStockCards('arabic-indices', stockData.arabic);
-    renderStockCards('commodities', stockData.commodities);
+.tab.active {
+    background-color: var(--tab-active-color);
+    color: white;
 }
 
-function renderStockCards(containerId, stocks) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-    
-    stocks.forEach(stock => {
-        const changeClass = stock.change >= 0 ? 'up' : 'down';
-        const card = document.createElement('div');
-        card.className = `stock-card ${changeClass}`;
-        card.innerHTML = `
-            <div class="stock-name">${stock.name} (${stock.symbol})</div>
-            <div class="stock-price">${stock.price.toLocaleString()}${stock.unit ? ' ' + stock.unit : ''}</div>
-            <div class="stock-change ${changeClass}">${stock.change >= 0 ? '+' : ''}${stock.change}%</div>
-        `;
-        container.appendChild(card);
-    });
+.tab-content {
+    display: none;
+    background-color: var(--card-color);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
-window.onload = function() {
-    updateCurrencySymbol();
-    updateExchangeRatesTable();
-    updateStockMarketData();
-    
-    document.addEventListener('gesturestart', function(e) {
-        e.preventDefault();
-    });
-};
+.tab-content.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.amount-input {
+    position: relative;
+}
+
+.amount-input input {
+    padding-left: 50px;
+    font-size: 20px;
+    text-align: right;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: #777;
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.keypad button {
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.keypad button:hover {
+    background-color: #e0e0e0;
+}
+
+.keypad button.clear {
+    grid-column: span 2;
+    background-color: var(--negative-color);
+    color: white;
+}
+
+.convert-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.exchange-rates-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.exchange-rates-table th, 
+.exchange-rates-table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.exchange-rates-table th {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.stock-market {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.stock-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--primary-color);
+}
+
+.up { color: var(--positive-color); }
+.down { color: var(--negative-color); }
+
+@media (max-width: 600px) {
+    .container { padding: 10px; }
+    .tab { padding: 12px 10px; font-size: 12px; }
+    .tab-content { padding: 15px; }
+    .stock-market { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 400px) {
+    .stock-market { grid-template-columns: 1fr; }
+}
